@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Todo App</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- Écran d'authentification -->
+  <div id="auth-screen" class="screen">
+    <div class="card">
+      <h1 class="logo">✓ Todo</h1>
+      <div class="tabs" id="tabs-row">
+        <button class="tab active" id="tab-login" onclick="switchTab('login')">Connexion</button>
+        <button class="tab" id="tab-signup" onclick="switchTab('signup')">Inscription</button>
+      </div>
+
+      <!-- Vue login / inscription -->
+      <form id="auth-form" onsubmit="handleAuth(event)">
+        <div class="field">
+          <label>Email</label>
+          <input type="email" id="email" placeholder="vous@exemple.com" required />
+        </div>
+        <div class="field">
+          <div class="label-row">
+            <label>Mot de passe</label>
+            <button type="button" class="link-btn" id="forgot-link" onclick="showForgotView()">Mot de passe oublié ?</button>
+          </div>
+          <input type="password" id="password" placeholder="••••••••" required />
+        </div>
+        <p id="auth-error" class="error hidden"></p>
+        <button type="submit" class="btn-primary" id="auth-btn">Se connecter</button>
+      </form>
+
+      <!-- Vue mot de passe oublié -->
+      <div id="forgot-view" class="hidden">
+        <p class="reset-hint">Saisis ton email et on t'envoie un lien de réinitialisation.</p>
+        <form onsubmit="sendResetEmail(event)">
+          <div class="field">
+            <label>Email</label>
+            <input type="email" id="reset-email" placeholder="vous@exemple.com" required />
+          </div>
+          <p id="forgot-error" class="error hidden"></p>
+          <p id="forgot-success" class="success hidden"></p>
+          <button type="submit" class="btn-primary" id="forgot-btn">Envoyer le lien</button>
+        </form>
+        <button type="button" class="link-btn center" onclick="showAuthView()">← Retour à la connexion</button>
+      </div>
+
+      <!-- Vue nouveau mot de passe (après clic sur le lien reçu par mail) -->
+      <div id="reset-view" class="hidden">
+        <p class="reset-hint">Choisis un nouveau mot de passe.</p>
+        <form onsubmit="updatePassword(event)">
+          <div class="field">
+            <label>Nouveau mot de passe</label>
+            <input type="password" id="new-password" placeholder="••••••••" minlength="8" required />
+          </div>
+          <p id="reset-error" class="error hidden"></p>
+          <button type="submit" class="btn-primary" id="reset-btn">Enregistrer</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Écran Todo -->
+  <div id="todo-screen" class="screen hidden">
+    <div class="app">
+      <header>
+        <div>
+          <h1>Mes tâches</h1>
+          <p id="user-email" class="subtitle"></p>
+        </div>
+        <button class="btn-logout" onclick="logout()">Déconnexion</button>
+      </header>
+
+      <form class="add-form" onsubmit="addTodo(event)">
+        <div class="add-row">
+          <input type="text" id="new-task" placeholder="Ajouter une tâche..." required />
+          <button type="submit" class="btn-add">+</button>
+        </div>
+        <div class="add-options">
+          <input type="date" id="new-due-date" title="Date d'échéance (optionnelle)" />
+          <div class="priority-picker">
+            <button type="button" class="priority-btn p-haute"   onclick="selectPriority('haute')"  >Haute</button>
+            <button type="button" class="priority-btn p-moyenne selected" onclick="selectPriority('moyenne')">Moyenne</button>
+            <button type="button" class="priority-btn p-basse"   onclick="selectPriority('basse')"  >Basse</button>
+          </div>
+        </div>
+      </form>
+
+      <div class="filters">
+        <div class="filter-group">
+          <button class="filter-btn active" onclick="setFilter('toutes')">Toutes</button>
+          <button class="filter-btn" onclick="setFilter('en_cours')">En cours</button>
+          <button class="filter-btn" onclick="setFilter('terminees')">Terminées</button>
+        </div>
+        <div class="filter-group">
+          <button class="filter-btn pf-btn active" onclick="setPriorityFilter('toutes')">Toutes</button>
+          <button class="filter-btn pf-btn pf-haute" onclick="setPriorityFilter('haute')">● Haute</button>
+          <button class="filter-btn pf-btn pf-moyenne" onclick="setPriorityFilter('moyenne')">● Moyenne</button>
+          <button class="filter-btn pf-btn pf-basse" onclick="setPriorityFilter('basse')">● Basse</button>
+        </div>
+        <span id="filter-count" class="filter-count"></span>
+      </div>
+
+      <div id="todo-list" class="todo-list">
+        <p class="empty-state">Chargement...</p>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.3/Sortable.min.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

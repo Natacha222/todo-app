@@ -1,0 +1,16 @@
+# Dépendances
+node_modules/
+
+# Variables d'environnement (ne jamais committer)
+.env
+.env.local
+.env.*.local
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Éditeurs
+.vscode/
+.idea/
+*.swp
