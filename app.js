@@ -104,7 +104,43 @@ async function showTodoScreen(user) {
   document.getElementById('auth-screen').classList.add('hidden');
   document.getElementById('todo-screen').classList.remove('hidden');
   document.getElementById('user-email').textContent = user.email;
+  attachListeners();
   await loadTodos();
+}
+
+// Délégation d'événements — appelée une seule fois, jamais de handlers inline
+let listenersAttached = false;
+function attachListeners() {
+  if (listenersAttached) return;
+  listenersAttached = true;
+
+  const list = document.getElementById('todo-list');
+
+  // Checkbox → toggle
+  list.addEventListener('change', e => {
+    const cb = e.target.closest('.todo-checkbox');
+    if (cb) toggleTodo(cb.dataset.id, cb.checked);
+  });
+
+  // Textarea perd le focus → sauvegarde note (focusout bubbles contrairement à blur)
+  list.addEventListener('focusout', e => {
+    const ta = e.target.closest('.notes-textarea');
+    if (ta) saveNote(ta.dataset.id, ta.value);
+  });
+
+  // Empêcher le drag depuis la textarea
+  list.addEventListener('dragstart', e => {
+    if (e.target.closest('.notes-textarea')) e.stopPropagation();
+  });
+
+  // Boutons (toggle-notes, delete)
+  list.addEventListener('click', e => {
+    const btn = e.target.closest('[data-action]');
+    if (!btn) return;
+    const { action, id } = btn.dataset;
+    if (action === 'toggle-notes') toggleNotes(id);
+    if (action === 'delete')       deleteTodo(id);
+  });
 }
 
 const PRIORITY_ORDER = { haute: 0, moyenne: 1, basse: 2 };
@@ -156,13 +192,15 @@ function renderTodos() {
     const p = todo.priority || 'moyenne';
     return `
     <div class="todo-item ${todo.completed ? 'completed' : ''} ${overdue ? 'overdue' : ''}"
-         id="todo-${todo.id}">
+         id="todo-${todo.id}"
+         data-id="${todo.id}">
       <span class="drag-handle" title="${currentFilter === 'toutes' ? 'Glisser pour réorganiser' : 'Disponible en vue Toutes'}">⠿</span>
       <div class="priority-dot dot-${p}" title="${PRIORITY_LABEL[p]}"></div>
       <input
         type="checkbox"
+        class="todo-checkbox"
+        data-id="${todo.id}"
         ${todo.completed ? 'checked' : ''}
-        onchange="toggleTodo('${todo.id}', this.checked)"
       />
       <div class="todo-body">
         <span>${escapeHtml(todo.task)}</span>
@@ -175,15 +213,14 @@ function renderTodos() {
         <div class="notes-section ${expandedNotes.has(todo.id) ? '' : 'hidden'}" id="notes-${todo.id}">
           <textarea
             class="notes-textarea"
+            data-id="${todo.id}"
             placeholder="Ajouter une note..."
-            onblur="saveNote('${todo.id}', this.value)"
-            ondragstart="event.stopPropagation()"
           >${escapeHtml(todo.notes || '')}</textarea>
         </div>
       </div>
       <div class="item-actions">
-        <button class="btn-note ${todo.notes ? 'has-note' : ''}" onclick="toggleNotes('${todo.id}')" title="Notes">📝</button>
-        <button class="btn-delete" onclick="deleteTodo('${todo.id}')">×</button>
+        <button class="btn-note ${todo.notes ? 'has-note' : ''}" data-action="toggle-notes" data-id="${todo.id}" title="Notes">📝</button>
+        <button class="btn-delete" data-action="delete" data-id="${todo.id}">×</button>
       </div>
     </div>
   `}).join('');
